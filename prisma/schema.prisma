@@ -8,71 +8,145 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id             String    @id @default(cuid())
-  name           String?
-  email          String    @unique
-  emailVerified  DateTime?
-  image          String?
-  hashedPassword String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  accounts Account[]
-  sessions Session[]
-  images   Image[]
-}
-
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Account {
-  id                String  @id @default(cuid())
+  id                String  @id
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Image {
+  id        String   @id
+  userId    String
+  bucket    String
+  path      String
+  publicUrl String
+  mimeType  String
+  sizeBytes Int
+  caption   String?
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Session {
+  id           String   @id
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model User {
+  id             String    @id
+  name           String?
+  email          String    @unique
+  emailVerified  DateTime?
+  image          String?
+  hashedPassword String?
+  role           UserRole  @default(user)
+  accessKey      String    @unique
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime
+  Account        Account[]
+  Image          Image[]
+  Session        Session[]
+  CarExpense     CarExpense[]
+  TravelExpense  TravelExpense[]
+}
+
+enum UserRole {
+  admin
+  user
+}
+
+enum CarExpenseCategory {
+  fuel
+  parking
+  toll
+  insurance
+  tax
+  wash
+  accessories
+  other
+}
+
+enum TravelExpenseCategory {
+  fuel
+  toll
+  parking
+  accommodation
+  food
+  ferry
+  other
+}
+
+model CarExpense {
+  id            String             @id @default(cuid())
+  userId        String
+  carName       String
+  licensePlate  String
+  category      CarExpenseCategory
+  amount        Float
+  date          DateTime           @db.Date
+  description   String
+  liters        Float?
+  pricePerLiter Float?
+  notes         String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  User          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, date])
+}
+
+model TravelExpense {
+  id            String                @id @default(cuid())
+  userId        String
+  tripName      String
+  carName       String
+  licensePlate  String
+  category      TravelExpenseCategory
+  amount        Float
+  date          DateTime              @db.Date
+  description   String
+  liters        Float?
+  pricePerLiter Float?
+  distance      Float?
+  notes         String?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  User          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, date])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model VerificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
 
   @@unique([identifier, token])
-}
-
-model Image {
-  id         String   @id @default(cuid())
-  userId     String
-  bucket     String
-  path       String
-  publicUrl  String
-  mimeType   String
-  sizeBytes  Int
-  caption    String?
-  createdAt  DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
 }

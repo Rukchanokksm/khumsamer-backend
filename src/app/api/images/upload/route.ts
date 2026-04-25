@@ -50,6 +50,7 @@ export async function POST(req: Request) {
 
   const image = await prisma.image.create({
     data: {
+      id: randomUUID(),
       userId,
       bucket: IMAGE_BUCKET,
       path,

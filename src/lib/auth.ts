@@ -31,18 +31,32 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           image: user.image,
+          role: user.role,
+          accessKey: user.accessKey,
         };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.id = user.id;
+      if (user) {
+        token.id = user.id;
+        const u = user as { role?: "admin" | "user"; accessKey?: string };
+        token.role = u.role;
+        token.accessKey = u.accessKey;
+      }
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token.id) {
-        (session.user as { id?: string }).id = token.id as string;
+      if (session.user) {
+        const u = session.user as {
+          id?: string;
+          role?: "admin" | "user";
+          accessKey?: string;
+        };
+        if (token.id) u.id = token.id;
+        if (token.role) u.role = token.role;
+        if (token.accessKey) u.accessKey = token.accessKey;
       }
       return session;
     },
