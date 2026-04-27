@@ -72,6 +72,7 @@ model User {
   Session        Session[]
   CarExpense     CarExpense[]
   TravelExpense  TravelExpense[]
+  Vehicle        Vehicle[]
 }
 
 enum UserRole {
@@ -140,6 +141,37 @@ model TravelExpense {
 
   @@index([userId])
   @@index([userId, date])
+}
+
+enum VehicleType {
+  sedan
+  pickup
+  ppv
+  suv
+  hatchback
+  other
+}
+
+enum VehicleCondition {
+  new
+  used
+}
+
+model Vehicle {
+  id           String            @id @default(cuid())
+  userId       String
+  brand        String
+  model        String
+  licensePlate String
+  type         VehicleType?
+  color        String?
+  condition    VehicleCondition?
+  purchaseDate DateTime?         @db.Date
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  User         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
