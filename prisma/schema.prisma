@@ -73,6 +73,7 @@ model User {
   CarExpense     CarExpense[]
   TravelExpense  TravelExpense[]
   Vehicle        Vehicle[]
+  Bill           Bill[]
 }
 
 enum UserRole {
@@ -172,6 +173,48 @@ model Vehicle {
   User         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+enum BillCategory {
+  water
+  electricity
+  rent
+  food
+  car_installment
+  item_installment
+  internet
+  mobile
+  insurance
+  other
+}
+
+enum BillStatus {
+  pending
+  paid
+}
+
+model Bill {
+  id                String       @id @default(cuid())
+  userId            String
+  name              String
+  category          BillCategory
+  amount            Float
+  dueDate           DateTime     @db.Date
+  paidDate          DateTime?    @db.Date
+  status            BillStatus   @default(pending)
+  isInstallment     Boolean      @default(false)
+  installmentNo     Int?
+  totalInstallments Int?
+  notes             String?
+  receiptUrl        String?
+  receiptPath       String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  User              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, dueDate])
+  @@index([userId, status])
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
