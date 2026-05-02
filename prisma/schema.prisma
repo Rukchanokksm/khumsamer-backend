@@ -76,11 +76,17 @@ model User {
   Bill           Bill[]
   Garage         Garage[]
   CarRepair      CarRepair[]
+  CarWashPlace   CarWashPlace[]
 }
 
 enum UserRole {
   admin
   user
+}
+
+enum WashServiceType {
+  self
+  full_service
 }
 
 enum CarExpenseCategory {
@@ -268,6 +274,19 @@ model Bill {
   @@index([userId])
   @@index([userId, dueDate])
   @@index([userId, status])
+}
+
+model CarWashPlace {
+  id          String          @id @default(cuid())
+  userId      String
+  name        String
+  mapsUrl     String?
+  serviceType WashServiceType @default(full_service)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  User        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
