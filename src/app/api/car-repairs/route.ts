@@ -5,7 +5,7 @@ import { requireUserId } from "@/lib/session";
 
 const REPAIR_TYPES = [
   "oil_change", "tire", "brake", "battery", "filter",
-  "inspection", "body_repair", "electrical", "ac", "wash", "other",
+  "inspection", "body_repair", "electrical", "ac", "transmission", "wash", "other",
 ] as const;
 
 const createSchema = z.object({
