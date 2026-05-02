@@ -74,6 +74,8 @@ model User {
   TravelExpense  TravelExpense[]
   Vehicle        Vehicle[]
   Bill           Bill[]
+  Garage         Garage[]
+  CarRepair      CarRepair[]
 }
 
 enum UserRole {
@@ -173,6 +175,56 @@ model Vehicle {
   User         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+enum RepairType {
+  oil_change
+  tire
+  brake
+  battery
+  filter
+  inspection
+  body_repair
+  electrical
+  ac
+  wash
+  other
+}
+
+model Garage {
+  id        String      @id @default(cuid())
+  userId    String
+  name      String
+  mapsUrl   String?
+  phones    Json        @default("[]")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  User      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  CarRepair CarRepair[]
+
+  @@index([userId])
+}
+
+model CarRepair {
+  id           String     @id @default(cuid())
+  userId       String
+  carName      String
+  licensePlate String
+  repairType   RepairType
+  date         DateTime   @db.Date
+  cost         Float
+  description  String
+  notes        String?
+  garageId     String?
+  receiptUrl   String?
+  receiptPath  String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  User         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Garage       Garage?    @relation(fields: [garageId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([userId, date])
 }
 
 enum BillCategory {
